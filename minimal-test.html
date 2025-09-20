@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .error { color: #ff4757; }
+        .success { color: #2ed573; }
+        .info { color: #5352ed; }
+    </style>
+</head>
+<body>
+    <h1>Minimal Story Engine Test</h1>
+    <div id="output"></div>
+    
+    <!-- Minimal DOM elements needed by story engine -->
+    <div id="story-display">
+        <div id="scene-title"></div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content"></div>
+    </div>
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    <div id="progress-fill"></div>
+    <div id="current-chapter"></div>
+    <div id="current-branch"></div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const p = document.createElement('p');
+            p.className = type;
+            p.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            output.appendChild(p);
+            console.log(message);
+        }
+        
+        try {
+            log('Starting minimal test...', 'info');
+            
+            // Test 1: Check if STORY_DATA exists
+            if (typeof STORY_DATA !== 'undefined') {
+                log('✓ STORY_DATA loaded', 'success');
+            } else {
+                log('✗ STORY_DATA not found', 'error');
+                throw new Error('STORY_DATA not found');
+            }
+            
+            // Test 2: Check if StoryData utility exists
+            if (typeof StoryData !== 'undefined') {
+                log('✓ StoryData utility loaded', 'success');
+            } else {
+                log('✗ StoryData utility not found', 'error');
+                throw new Error('StoryData utility not found');
+            }
+            
+            // Test 3: Try to get first scene
+            const firstScene = StoryData.getScene('scene_001');
+            if (firstScene) {
+                log(`✓ Found first scene: "${firstScene.title}"`, 'success');
+            } else {
+                log('✗ Could not find first scene', 'error');
+                throw new Error('First scene not found');
+            }
+            
+            // Test 4: Create story engine
+            if (typeof StoryEngine !== 'undefined') {
+                log('✓ StoryEngine class loaded', 'success');
+                
+                const engine = new StoryEngine();
+                log('✓ StoryEngine instance created', 'success');
+                
+                // Test 5: Try to load first scene
+                log('Attempting to load first scene...', 'info');
+                engine.loadScene('scene_001');
+                log('✓ Scene loading initiated', 'success');
+                
+            } else {
+                log('✗ StoryEngine class not found', 'error');
+            }
+            
+        } catch (error) {
+            log(`✗ Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

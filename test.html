@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Data Test</title>
+</head>
+<body>
+    <h1>Story Data Test</h1>
+    <div id="output"></div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            output.appendChild(p);
+        }
+        
+        // Test story data loading
+        log('Testing story data...');
+        
+        if (typeof STORY_DATA !== 'undefined') {
+            log('✓ STORY_DATA is defined');
+            log(`✓ Found ${Object.keys(STORY_DATA).length} branches`);
+        } else {
+            log('✗ STORY_DATA is not defined');
+        }
+        
+        if (typeof StoryData !== 'undefined') {
+            log('✓ StoryData utility is defined');
+            
+            // Test getting a scene
+            const scene = StoryData.getScene('scene_001');
+            if (scene) {
+                log(`✓ Found scene_001: "${scene.title}"`);
+                log(`✓ Speaker: ${scene.speaker}`);
+                log(`✓ Content length: ${scene.content.length} characters`);
+            } else {
+                log('✗ Could not find scene_001');
+            }
+            
+            // Test validation
+            const validation = StoryData.validateStoryData();
+            if (validation.isValid) {
+                log('✓ Story data validation passed');
+                log(`✓ Total scenes: ${validation.stats.totalScenes}`);
+                log(`✓ Total branches: ${validation.stats.totalBranches}`);
+            } else {
+                log('✗ Story data validation failed');
+                validation.errors.forEach(error => log(`  - ${error}`));
+            }
+            
+        } else {
+            log('✗ StoryData utility is not defined');
+        }
+    </script>
+</body>
+</html>

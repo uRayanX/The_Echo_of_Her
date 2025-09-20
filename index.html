@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Echo of Her - Interactive Story</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/homepage.css">
+    <link rel="stylesheet" href="css/chapter-selection.css">
+</head>
+
+<body>
+    <!-- Homepage Container -->
+    <div id="homepage-container" class="view-container">
+        <!-- Fallback content in case JavaScript fails -->
+        <div class="homepage-fallback" style="padding: 2rem; text-align: center; color: #eee; background: #1a1a2e; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+            <h1 style="color: #4a90e2; font-size: 3rem; margin-bottom: 1rem;">The Echo of Her</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">Loading...</p>
+            <div id="debug-info" style="font-size: 0.9rem; color: #bbb; text-align: left; max-width: 600px; margin: 0 auto;"></div>
+        </div>
+    </div>
+
+    <!-- Chapter Selection Container -->
+    <div id="chapter-selection-container" class="view-container">
+        <!-- Chapter selection content will be added by ChapterSelection component -->
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container" class="view-container">
+        <!-- Progress Indicator -->
+        <header class="progress-header">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="chapter-info">
+                <span id="current-chapter">Opening</span>
+                <span class="separator">•</span>
+                <span id="current-branch">Main Story</span>
+            </div>
+        </header>
+
+        <!-- Time and Location Overlay for Transitions -->
+        <div class="transition-overlay" id="transition-overlay">
+            <div class="transition-content">
+                <div class="transition-time" id="transition-time"></div>
+                <div class="transition-location" id="transition-location"></div>
+                <div class="transition-date" id="transition-date"></div>
+            </div>
+        </div>
+
+        <!-- Main Story Display Area -->
+        <main class="story-container">
+            <div class="story-display" id="story-display">
+                <div class="scene-header">
+                    <h2 class="scene-title" id="scene-title">The Echo of Her</h2>
+                    <div class="scene-timestamp" id="scene-timestamp"></div>
+                </div>
+
+                <div class="dialogue-area" id="dialogue-area">
+                    <div class="speaker-name" id="speaker-name"></div>
+                    <div class="dialogue-content" id="dialogue-content">
+                        <!-- Story content will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choice Interface -->
+            <div class="choice-interface" id="choice-interface">
+                <div class="choices-container" id="choices-container">
+                    <!-- Choices will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Controls -->
+        <nav class="navigation-controls">
+            <button class="nav-btn" id="home-btn" aria-label="Go to homepage">
+                <span class="nav-icon">🏠</span>
+                Home
+            </button>
+            <button class="nav-btn" id="menu-btn" aria-label="Open menu">
+                <span class="nav-icon">☰</span>
+                Menu
+            </button>
+            <button class="nav-btn" id="save-btn" aria-label="Save progress">
+                <span class="nav-icon">💾</span>
+                Save
+            </button>
+            <button class="nav-btn" id="settings-btn" aria-label="Settings">
+                <span class="nav-icon">⚙️</span>
+                Settings
+            </button>
+        </nav>
+
+        <!-- Menu Overlay -->
+        <div class="menu-overlay" id="menu-overlay">
+            <div class="menu-content">
+                <h3>Game Menu</h3>
+                <div class="menu-section">
+                    <h4>Navigation</h4>
+                    <button class="menu-nav-btn" id="menu-home-btn">
+                        <span class="nav-icon">🏠</span>
+                        Go to Homepage
+                    </button>
+                    <button class="menu-nav-btn" id="menu-chapters-btn">
+                        <span class="nav-icon">☰</span>
+                        Chapter Selection
+                    </button>
+                </div>
+                <div class="menu-section">
+                    <h4>Recent Chapters</h4>
+                    <div class="chapter-list" id="chapter-list">
+                        <!-- Chapters will be populated dynamically -->
+                    </div>
+                </div>
+                <div class="menu-section">
+                    <h4>Settings</h4>
+                    <label class="setting-item">
+                        <input type="checkbox" id="auto-save" checked>
+                        Auto-save progress
+                    </label>
+                    <label class="setting-item">
+                        <input type="range" id="text-speed" min="1" max="5" value="3">
+                        Text speed
+                    </label>
+                </div>
+                <button class="close-menu-btn" id="close-menu">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-content">
+            <h1>The Echo of Her</h1>
+            <div class="loading-spinner"></div>
+            <p>Loading story...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/theme-controller.js"></script>
+    <script src="js/story-engine.js"></script>
+    <script src="js/navigation-controller.js"></script>
+    <script src="js/homepage.js"></script>
+    <script src="js/chapter-selection.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>

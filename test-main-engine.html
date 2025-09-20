@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Engine Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Progress Indicator -->
+        <header class="progress-header">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="chapter-info">
+                <span id="current-chapter">Opening</span>
+                <span class="separator">•</span>
+                <span id="current-branch">Main Story</span>
+            </div>
+        </header>
+
+        <!-- Main Story Display Area -->
+        <main class="story-container">
+            <div class="story-display" id="story-display">
+                <div class="scene-header">
+                    <h2 class="scene-title" id="scene-title">The Echo of Her</h2>
+                    <div class="scene-timestamp" id="scene-timestamp"></div>
+                </div>
+
+                <div class="dialogue-area" id="dialogue-area">
+                    <div class="speaker-name" id="speaker-name"></div>
+                    <div class="dialogue-content" id="dialogue-content">
+                        Loading story...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choice Interface -->
+            <div class="choice-interface" id="choice-interface">
+                <div class="choices-container" id="choices-container">
+                    <!-- Choices will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Debug Console -->
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: #eee; padding: 10px; font-family: monospace; font-size: 0.8em; max-height: 200px; overflow-y: auto; z-index: 1000;" id="debug-console">
+        <div style="font-weight: bold; margin-bottom: 5px;">Debug Console:</div>
+        <div id="debug-output"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/theme-controller.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        // Override console methods to show in debug console
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            debugOutput.appendChild(div);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+            
+            // Also log to actual console
+            if (type === 'error') {
+                originalError(message);
+            } else {
+                originalLog(message);
+            }
+        }
+        
+        console.log = (...args) => debugLog(args.join(' '), 'info');
+        console.error = (...args) => debugLog(args.join(' '), 'error');
+        
+        // Test the actual story engine with the main HTML structure
+        debugLog('Starting main engine test...', 'info');
+        
+        try {
+            // Check dependencies
+            if (typeof STORY_DATA === 'undefined') {
+                throw new Error('STORY_DATA not loaded');
+            }
+            debugLog('✓ STORY_DATA loaded', 'success');
+            
+            if (typeof StoryData === 'undefined') {
+                throw new Error('StoryData utility not loaded');
+            }
+            debugLog('✓ StoryData utility loaded', 'success');
+            
+            if (typeof StoryEngine === 'undefined') {
+                throw new Error('StoryEngine not loaded');
+            }
+            debugLog('✓ StoryEngine loaded', 'success');
+            
+            if (typeof ThemeController === 'undefined') {
+                throw new Error('ThemeController not loaded');
+            }
+            debugLog('✓ ThemeController loaded', 'success');
+            
+            // Test scene access
+            const firstScene = StoryData.getScene('scene_001');
+            if (!firstScene) {
+                throw new Error('Cannot find scene_001');
+            }
+            debugLog(`✓ Found first scene: "${firstScene.title}"`, 'success');
+            
+            // Initialize theme controller
+            debugLog('Initializing ThemeController...', 'info');
+            const themeController = new ThemeController();
+            themeController.init();
+            debugLog('✓ ThemeController initialized', 'success');
+            
+            // Create story engine
+            debugLog('Creating StoryEngine...', 'info');
+            const storyEngine = new StoryEngine();
+            debugLog('✓ StoryEngine created', 'success');
+            
+            // Initialize story engine
+            debugLog('Initializing StoryEngine...', 'info');
+            storyEngine.init();
+            debugLog('✓ StoryEngine initialized', 'success');
+            
+            // Check if scene was loaded after a delay
+            setTimeout(() => {
+                const currentScene = storyEngine.getCurrentScene();
+                if (currentScene) {
+                    debugLog(`✓ Current scene: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                    
+                    // Check DOM content
+                    const titleElement = document.getElementById('scene-title');
+                    const contentElement = document.getElementById('dialogue-content');
+                    
+                    debugLog(`Title in DOM: "${titleElement.textContent}"`, 'info');
+                    debugLog(`Content in DOM: "${contentElement.textContent.substring(0, 100)}..."`, 'info');
+                    
+                } else {
+                    debugLog('✗ No current scene set', 'error');
+                }
+            }, 2000);
+            
+        } catch (error) {
+            debugLog(`✗ Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Game Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/themes.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Progress Indicator -->
+        <header class="progress-header">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="chapter-info">
+                <span id="current-chapter">Opening</span>
+                <span class="separator">•</span>
+                <span id="current-branch">Main Story</span>
+            </div>
+        </header>
+
+        <!-- Time and Location Overlay for Transitions -->
+        <div class="transition-overlay" id="transition-overlay">
+            <div class="transition-content">
+                <div class="transition-time" id="transition-time"></div>
+                <div class="transition-location" id="transition-location"></div>
+                <div class="transition-date" id="transition-date"></div>
+            </div>
+        </div>
+
+        <!-- Main Story Display Area -->
+        <main class="story-container">
+            <div class="story-display" id="story-display">
+                <div class="scene-header">
+                    <h2 class="scene-title" id="scene-title">The Echo of Her</h2>
+                    <div class="scene-timestamp" id="scene-timestamp"></div>
+                </div>
+
+                <div class="dialogue-area" id="dialogue-area">
+                    <div class="speaker-name" id="speaker-name"></div>
+                    <div class="dialogue-content" id="dialogue-content">
+                        Loading story...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choice Interface -->
+            <div class="choice-interface" id="choice-interface">
+                <div class="choices-container" id="choices-container">
+                    <!-- Choices will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Debug Console -->
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: #eee; padding: 10px; font-family: monospace; font-size: 0.8em; max-height: 150px; overflow-y: auto; z-index: 1000;" id="debug-console">
+        <div id="debug-output"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/theme-controller.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : type === 'warning' ? '#ffa502' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            debugOutput.appendChild(div);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            debugLog(args.join(' '), 'info');
+        };
+        
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            debugLog(args.join(' '), 'error');
+        };
+        
+        // Simple game initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            debugLog('DOM loaded, starting simple game...', 'info');
+            
+            try {
+                // Check dependencies
+                if (typeof STORY_DATA === 'undefined') {
+                    throw new Error('STORY_DATA not loaded');
+                }
+                debugLog('✓ STORY_DATA available', 'success');
+                
+                if (typeof StoryData === 'undefined') {
+                    throw new Error('StoryData utility not loaded');
+                }
+                debugLog('✓ StoryData utility available', 'success');
+                
+                if (typeof ThemeController === 'undefined') {
+                    throw new Error('ThemeController not loaded');
+                }
+                debugLog('✓ ThemeController available', 'success');
+                
+                if (typeof StoryEngine === 'undefined') {
+                    throw new Error('StoryEngine not loaded');
+                }
+                debugLog('✓ StoryEngine available', 'success');
+                
+                // Initialize theme controller
+                debugLog('Initializing ThemeController...', 'info');
+                const themeController = new ThemeController();
+                themeController.init();
+                debugLog('✓ ThemeController initialized', 'success');
+                
+                // Create story engine
+                debugLog('Creating StoryEngine...', 'info');
+                const storyEngine = new StoryEngine();
+                debugLog('✓ StoryEngine created', 'success');
+                
+                // Set up global reference for theme integration
+                window.game = {
+                    themeController: themeController,
+                    storyEngine: storyEngine
+                };
+                
+                // Initialize story engine
+                debugLog('Initializing StoryEngine...', 'info');
+                storyEngine.init();
+                debugLog('✓ StoryEngine initialized', 'success');
+                
+                // Check if scene loaded after delay
+                setTimeout(() => {
+                    const currentScene = storyEngine.getCurrentScene();
+                    if (currentScene) {
+                        debugLog(`✓ Current scene: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                        
+                        // Check DOM content
+                        const titleEl = document.getElementById('scene-title');
+                        const contentEl = document.getElementById('dialogue-content');
+                        const choicesEl = document.getElementById('choices-container');
+                        
+                        debugLog(`DOM Title: "${titleEl.textContent}"`, 'info');
+                        debugLog(`DOM Content: "${contentEl.textContent.substring(0, 80)}..."`, 'info');
+                        debugLog(`DOM Choices: ${choicesEl.children.length} buttons`, 'info');
+                        
+                        if (titleEl.textContent === 'The Echo of Her' && contentEl.textContent === 'Loading story...') {
+                            debugLog('⚠ Content not updated - story may not be loading', 'warning');
+                        } else {
+                            debugLog('✓ Content appears to be updated', 'success');
+                        }
+                        
+                    } else {
+                        debugLog('✗ No current scene found', 'error');
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                debugLog(`✗ Initialization error: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

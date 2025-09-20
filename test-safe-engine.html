@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Story Engine Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .console { background: #0f0f23; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; max-height: 200px; overflow-y: auto; }
+        #story-display { background: #16213e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #scene-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #4a90e2; }
+        #scene-timestamp { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+        #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
+        #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
+        .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Safe Story Engine Test</h1>
+    <div id="console" class="console"></div>
+    
+    <!-- Story display elements -->
+    <div id="story-display">
+        <div id="scene-title">Loading...</div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content">Initializing...</div>
+    </div>
+    
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    
+    <!-- Hidden elements -->
+    <div style="display: none;">
+        <div id="progress-fill"></div>
+        <div id="current-chapter">Opening</div>
+        <div id="current-branch">Main Story</div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Create a safe version of the story engine
+        class SafeStoryEngine {
+            constructor() {
+                this.currentScene = null;
+                this.currentBranch = 'opening';
+                this.visitedScenes = new Set();
+                this.choiceHistory = [];
+                this.isAnimating = false;
+                
+                // DOM elements with null checks
+                this.storyDisplay = document.getElementById('story-display');
+                this.sceneTitle = document.getElementById('scene-title');
+                this.sceneTimestamp = document.getElementById('scene-timestamp');
+                this.speakerName = document.getElementById('speaker-name');
+                this.dialogueContent = document.getElementById('dialogue-content');
+                this.choicesContainer = document.getElementById('choices-container');
+                this.choiceInterface = document.getElementById('choice-interface');
+                
+                // Log which elements were found
+                const elements = {
+                    storyDisplay: this.storyDisplay,
+                    sceneTitle: this.sceneTitle,
+                    sceneTimestamp: this.sceneTimestamp,
+                    speakerName: this.speakerName,
+                    dialogueContent: this.dialogueContent,
+                    choicesContainer: this.choicesContainer,
+                    choiceInterface: this.choiceInterface
+                };
+                
+                for (const [name, element] of Object.entries(elements)) {
+                    if (element) {
+                        log(`✓ Found ${name}`, 'success');
+                    } else {
+                        log(`✗ Missing ${name}`, 'error');
+                    }
+                }
+            }
+            
+            init() {
+                log('SafeStoryEngine initialized', 'info');
+                this.loadScene('scene_001');
+            }
+            
+            async loadScene(sceneId) {
+                if (this.isAnimating) return;
+                
+                log(`Loading scene: ${sceneId}`, 'info');
+                
+                const scene = StoryData.getScene(sceneId);
+                if (!scene) {
+                    log(`Scene not found: ${sceneId}`, 'error');
+                    return;
+                }
+                
+                this.currentScene = scene;
+                this.visitedScenes.add(sceneId);
+                
+                log(`Found scene: "${scene.title}"`, 'success');
+                
+                // Display scene content
+                await this.displayScene(scene);
+            }
+            
+            async displayScene(scene) {
+                this.isAnimating = true;
+                
+                log('Displaying scene content...', 'info');
+                
+                // Clear previous content
+                this.clearContent();
+                
+                // Set scene header
+                if (this.sceneTitle) {
+                    this.sceneTitle.textContent = scene.title;
+                    log(`Set title: "${scene.title}"`, 'success');
+                } else {
+                    log('Cannot set title - element missing', 'error');
+                }
+                
+                if (this.sceneTimestamp) {
+                    this.sceneTimestamp.textContent = scene.timestamp || '';
+                    log(`Set timestamp: "${scene.timestamp || ''}"`, 'success');
+                }
+                
+                // Set speaker name
+                if (this.speakerName) {
+                    if (scene.speaker && scene.speaker !== 'NARRATOR') {
+                        this.speakerName.textContent = scene.speaker;
+                        this.speakerName.style.display = 'block';
+                        log(`Set speaker: "${scene.speaker}"`, 'success');
+                    } else {
+                        this.speakerName.style.display = 'none';
+                        log('Hidden speaker (narrator)', 'info');
+                    }
+                }
+                
+                // Display dialogue content
+                if (this.dialogueContent) {
+                    this.dialogueContent.textContent = scene.content;
+                    log(`Set content (${scene.content.length} chars)`, 'success');
+                } else {
+                    log('Cannot set content - element missing', 'error');
+                }
+                
+                // Display choices
+                this.displayChoices(scene.choices);
+                
+                this.isAnimating = false;
+                log('Scene display complete', 'success');
+            }
+            
+            displayChoices(choices) {
+                if (!this.choicesContainer) {
+                    log('Cannot display choices - container missing', 'error');
+                    return;
+                }
+                
+                this.choicesContainer.innerHTML = '';
+                
+                if (!choices || choices.length === 0) {
+                    log('No choices to display', 'info');
+                    return;
+                }
+                
+                log(`Displaying ${choices.length} choices`, 'info');
+                
+                choices.forEach((choice, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.textContent = choice.text;
+                    
+                    button.onclick = () => {
+                        log(`Choice selected: ${choice.text} -> ${choice.nextScene}`, 'info');
+                        this.loadScene(choice.nextScene);
+                    };
+                    
+                    this.choicesContainer.appendChild(button);
+                });
+                
+                log(`Added ${choices.length} choice buttons`, 'success');
+            }
+            
+            clearContent() {
+                if (this.dialogueContent) {
+                    this.dialogueContent.innerHTML = '';
+                    this.dialogueContent.className = 'dialogue-content';
+                }
+                if (this.speakerName) {
+                    this.speakerName.className = 'speaker-name';
+                }
+                if (this.choicesContainer) {
+                    this.choicesContainer.innerHTML = '';
+                }
+                log('Content cleared', 'info');
+            }
+            
+            getCurrentScene() {
+                return this.currentScene;
+            }
+        }
+        
+        // Test the safe story engine
+        try {
+            log('Creating SafeStoryEngine...', 'info');
+            const engine = new SafeStoryEngine();
+            
+            log('Initializing SafeStoryEngine...', 'info');
+            engine.init();
+            
+        } catch (error) {
+            log(`Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

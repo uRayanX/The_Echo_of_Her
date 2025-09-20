@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - The Echo of Her</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+        }
+        .debug-info {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .error {
+            color: #ff4757;
+            background: #2a1616;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #2ed573;
+            background: #1a2a1a;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <h1>The Echo of Her - Debug Mode</h1>
+        <div id="debug-output"></div>
+        <button onclick="testStoryData()">Test Story Data</button>
+        <button onclick="testThemeController()">Test Theme Controller</button>
+        <button onclick="testStoryEngine()">Test Story Engine</button>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <div id="story-display">
+            <div id="scene-title"></div>
+            <div id="scene-timestamp"></div>
+            <div id="speaker-name"></div>
+            <div id="dialogue-content"></div>
+        </div>
+        <div id="choice-interface">
+            <div id="choices-container"></div>
+        </div>
+        <div id="progress-fill"></div>
+        <div id="current-chapter"></div>
+        <div id="current-branch"></div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/theme-controller.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            debugOutput.appendChild(div);
+        }
+        
+        function testStoryData() {
+            try {
+                log('Testing Story Data...', 'info');
+                
+                if (typeof STORY_DATA === 'undefined') {
+                    log('ERROR: STORY_DATA not defined', 'error');
+                    return;
+                }
+                
+                if (typeof StoryData === 'undefined') {
+                    log('ERROR: StoryData not defined', 'error');
+                    return;
+                }
+                
+                // Test getting a scene
+                const scene = StoryData.getScene('scene_001');
+                if (scene) {
+                    log(`SUCCESS: Found scene_001: ${scene.title}`, 'success');
+                } else {
+                    log('ERROR: Could not find scene_001', 'error');
+                }
+                
+                // Test opening scenes
+                const openingScenes = StoryData.getBranchScenes('opening');
+                log(`SUCCESS: Found ${openingScenes.length} opening scenes`, 'success');
+                
+            } catch (error) {
+                log(`ERROR in Story Data: ${error.message}`, 'error');
+            }
+        }
+        
+        function testThemeController() {
+            try {
+                log('Testing Theme Controller...', 'info');
+                
+                if (typeof ThemeController === 'undefined') {
+                    log('ERROR: ThemeController not defined', 'error');
+                    return;
+                }
+                
+                const themeController = new ThemeController();
+                themeController.init();
+                log('SUCCESS: Theme Controller initialized', 'success');
+                
+                // Test theme change
+                themeController.updateThemeForScene('scene_001');
+                log('SUCCESS: Theme updated for scene_001', 'success');
+                
+            } catch (error) {
+                log(`ERROR in Theme Controller: ${error.message}`, 'error');
+            }
+        }
+        
+        function testStoryEngine() {
+            try {
+                log('Testing Story Engine...', 'info');
+                
+                if (typeof StoryEngine === 'undefined') {
+                    log('ERROR: StoryEngine not defined', 'error');
+                    return;
+                }
+                
+                const storyEngine = new StoryEngine();
+                log('SUCCESS: Story Engine created', 'success');
+                
+            } catch (error) {
+                log(`ERROR in Story Engine: ${error.message}`, 'error');
+            }
+        }
+        
+        function startGame() {
+            try {
+                log('Starting game...', 'info');
+                document.getElementById('game-container').style.display = 'block';
+                
+                const themeController = new ThemeController();
+                themeController.init();
+                
+                const storyEngine = new StoryEngine();
+                storyEngine.init();
+                
+                log('SUCCESS: Game started!', 'success');
+                
+            } catch (error) {
+                log(`ERROR starting game: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run basic tests
+        window.addEventListener('load', () => {
+            log('Page loaded, running basic tests...', 'info');
+            testStoryData();
+            testThemeController();
+            testStoryEngine();
+        });
+    </script>
+</body>
+</html>

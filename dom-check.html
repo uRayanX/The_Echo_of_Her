@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Elements Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .console { background: #0f0f23; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; max-height: 400px; overflow-y: auto; }
+        .error { color: #ff4757; }
+        .success { color: #2ed573; }
+        .warning { color: #ffa502; }
+    </style>
+</head>
+<body>
+    <h1>DOM Elements Check</h1>
+    <div id="console" class="console"></div>
+    
+    <!-- Copy the exact structure from index.html -->
+    <div id="game-container">
+        <!-- Progress Indicator -->
+        <header class="progress-header">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="chapter-info">
+                <span id="current-chapter">Opening</span>
+                <span class="separator">•</span>
+                <span id="current-branch">Main Story</span>
+            </div>
+        </header>
+
+        <!-- Time and Location Overlay for Transitions -->
+        <div class="transition-overlay" id="transition-overlay">
+            <div class="transition-content">
+                <div class="transition-time" id="transition-time"></div>
+                <div class="transition-location" id="transition-location"></div>
+                <div class="transition-date" id="transition-date"></div>
+            </div>
+        </div>
+
+        <!-- Main Story Display Area -->
+        <main class="story-container">
+            <div class="story-display" id="story-display">
+                <div class="scene-header">
+                    <h2 class="scene-title" id="scene-title">The Echo of Her</h2>
+                    <div class="scene-timestamp" id="scene-timestamp"></div>
+                </div>
+
+                <div class="dialogue-area" id="dialogue-area">
+                    <div class="speaker-name" id="speaker-name"></div>
+                    <div class="dialogue-content" id="dialogue-content">
+                        <!-- Story content will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Choice Interface -->
+            <div class="choice-interface" id="choice-interface">
+                <div class="choices-container" id="choices-container">
+                    <!-- Choices will be dynamically inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Check all required DOM elements
+        const requiredElements = [
+            'story-display',
+            'scene-title', 
+            'scene-timestamp',
+            'speaker-name',
+            'dialogue-content',
+            'choices-container',
+            'choice-interface',
+            'progress-fill',
+            'current-chapter',
+            'current-branch',
+            'transition-overlay',
+            'transition-time',
+            'transition-location',
+            'transition-date'
+        ];
+        
+        log('Checking DOM elements...', 'info');
+        
+        let allFound = true;
+        requiredElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                log(`✓ Found: ${id}`, 'success');
+            } else {
+                log(`✗ Missing: ${id}`, 'error');
+                allFound = false;
+            }
+        });
+        
+        if (allFound) {
+            log('All required DOM elements found!', 'success');
+            
+            // Test story engine creation
+            log('Loading story scripts...', 'info');
+            
+            // Load scripts dynamically
+            const scripts = [
+                'js/story-data.js',
+                'js/story-data-utils.js',
+                'js/story-engine.js'
+            ];
+            
+            let loadedScripts = 0;
+            
+            scripts.forEach(src => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    log(`✓ Loaded: ${src}`, 'success');
+                    loadedScripts++;
+                    
+                    if (loadedScripts === scripts.length) {
+                        // All scripts loaded, test story engine
+                        setTimeout(() => {
+                            try {
+                                log('Testing StoryEngine creation...', 'info');
+                                const engine = new StoryEngine();
+                                log('✓ StoryEngine created successfully', 'success');
+                                
+                                log('Testing StoryEngine initialization...', 'info');
+                                engine.init();
+                                log('✓ StoryEngine initialized', 'success');
+                                
+                                // Check if scene was loaded
+                                setTimeout(() => {
+                                    const currentScene = engine.getCurrentScene();
+                                    if (currentScene) {
+                                        log(`✓ Scene loaded: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                                        
+                                        // Check DOM content
+                                        const titleEl = document.getElementById('scene-title');
+                                        const contentEl = document.getElementById('dialogue-content');
+                                        
+                                        log(`Title in DOM: "${titleEl.textContent}"`, 'info');
+                                        log(`Content preview: "${contentEl.textContent.substring(0, 50)}..."`, 'info');
+                                        
+                                    } else {
+                                        log('✗ No scene loaded', 'error');
+                                    }
+                                }, 1000);
+                                
+                            } catch (error) {
+                                log(`✗ StoryEngine error: ${error.message}`, 'error');
+                                console.error('Full error:', error);
+                            }
+                        }, 100);
+                    }
+                };
+                
+                script.onerror = () => {
+                    log(`✗ Failed to load: ${src}`, 'error');
+                };
+                
+                document.head.appendChild(script);
+            });
+            
+        } else {
+            log('Cannot proceed - missing DOM elements', 'error');
+        }
+    </script>
+</body>
+</html>

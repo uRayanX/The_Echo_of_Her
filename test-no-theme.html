@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Without Theme Controller</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        #story-display { background: #16213e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #scene-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #4a90e2; }
+        #scene-timestamp { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+        #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
+        #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
+        .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .choice-btn:hover { background: #357abd; }
+        .console { background: #0f0f23; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Test Story Engine Without Theme Controller</h1>
+    <div id="console" class="console"></div>
+    
+    <!-- Story display elements -->
+    <div id="story-display">
+        <div id="scene-title">Loading...</div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content">Initializing story engine...</div>
+    </div>
+    
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    
+    <!-- Hidden elements needed by story engine -->
+    <div style="display: none;">
+        <div id="progress-fill"></div>
+        <div id="current-chapter">Opening</div>
+        <div id="current-branch">Main Story</div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(div);
+            console.log(message);
+        }
+        
+        try {
+            log('Starting test without theme controller...', 'info');
+            
+            // Verify dependencies
+            if (typeof STORY_DATA === 'undefined') {
+                throw new Error('STORY_DATA not loaded');
+            }
+            log('✓ STORY_DATA loaded', 'success');
+            
+            if (typeof StoryData === 'undefined') {
+                throw new Error('StoryData utility not loaded');
+            }
+            log('✓ StoryData utility loaded', 'success');
+            
+            if (typeof StoryEngine === 'undefined') {
+                throw new Error('StoryEngine not loaded');
+            }
+            log('✓ StoryEngine loaded', 'success');
+            
+            // Test scene access
+            const firstScene = StoryData.getScene('scene_001');
+            if (!firstScene) {
+                throw new Error('Cannot find scene_001');
+            }
+            log(`✓ Found first scene: "${firstScene.title}"`, 'success');
+            
+            // Create and initialize story engine
+            log('Creating StoryEngine instance...', 'info');
+            const storyEngine = new StoryEngine();
+            log('✓ StoryEngine created', 'success');
+            
+            // Initialize the story engine (this should load the first scene)
+            log('Initializing story engine...', 'info');
+            storyEngine.init();
+            log('✓ Story engine initialized', 'success');
+            
+            // Check if scene was loaded
+            setTimeout(() => {
+                const currentScene = storyEngine.getCurrentScene();
+                if (currentScene) {
+                    log(`✓ Current scene: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                } else {
+                    log('✗ No current scene set', 'error');
+                }
+            }, 1000);
+            
+        } catch (error) {
+            log(`✗ Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .console { background: #0f0f23; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; max-height: 300px; overflow-y: auto; }
+        #story-display { background: #16213e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #scene-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #4a90e2; }
+        #scene-timestamp { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+        #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
+        #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
+        .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>DOM Debug Test</h1>
+    <div id="console" class="console"></div>
+    
+    <!-- Story display elements -->
+    <div id="story-display">
+        <div id="scene-title">Loading...</div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content">Initializing story engine...</div>
+    </div>
+    
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    
+    <!-- Hidden elements needed by story engine -->
+    <div style="display: none;">
+        <div id="progress-fill"></div>
+        <div id="current-chapter">Opening</div>
+        <div id="current-branch">Main Story</div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Test DOM elements before loading story engine
+        log('Testing DOM elements...', 'info');
+        
+        const requiredElements = [
+            'story-display',
+            'scene-title', 
+            'scene-timestamp',
+            'speaker-name',
+            'dialogue-content',
+            'choices-container',
+            'choice-interface',
+            'progress-fill',
+            'current-chapter',
+            'current-branch'
+        ];
+        
+        let allElementsFound = true;
+        
+        requiredElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                log(`✓ Found element: ${id}`, 'success');
+            } else {
+                log(`✗ Missing element: ${id}`, 'error');
+                allElementsFound = false;
+            }
+        });
+        
+        if (allElementsFound) {
+            log('All required DOM elements found, loading story engine...', 'success');
+            
+            // Load story engine after DOM check
+            const script = document.createElement('script');
+            script.src = 'js/story-engine.js';
+            script.onload = function() {
+                log('Story engine script loaded', 'success');
+                
+                try {
+                    // Test story engine creation
+                    log('Creating StoryEngine...', 'info');
+                    const engine = new StoryEngine();
+                    log('✓ StoryEngine created successfully', 'success');
+                    
+                    // Test initialization
+                    log('Initializing story engine...', 'info');
+                    engine.init();
+                    log('✓ Story engine initialized', 'success');
+                    
+                    // Check scene loading after a delay
+                    setTimeout(() => {
+                        const currentScene = engine.getCurrentScene();
+                        if (currentScene) {
+                            log(`✓ Scene loaded: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                            
+                            // Check if content was displayed
+                            const titleElement = document.getElementById('scene-title');
+                            const contentElement = document.getElementById('dialogue-content');
+                            
+                            log(`Title element content: "${titleElement.textContent}"`, 'info');
+                            log(`Content element content: "${contentElement.textContent.substring(0, 100)}..."`, 'info');
+                            
+                        } else {
+                            log('✗ No scene loaded', 'error');
+                        }
+                    }, 2000);
+                    
+                } catch (error) {
+                    log(`✗ Error creating/initializing story engine: ${error.message}`, 'error');
+                    console.error('Full error:', error);
+                }
+            };
+            
+            script.onerror = function() {
+                log('✗ Failed to load story engine script', 'error');
+            };
+            
+            document.head.appendChild(script);
+            
+        } else {
+            log('Cannot proceed - missing required DOM elements', 'error');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+/* Navigation and View Transition Styles */
+
+/* View containers */
+.view-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* View transition animations */
+.view-fade-out {
+    animation: viewFadeOut 0.3s ease-out forwards;
+}
+
+.view-fade-in {
+    animation: viewFadeIn 0.3s ease-in forwards;
+}
+
+@keyframes viewFadeOut {
+    0% { 
+        opacity: 1; 
+        transform: translateY(0px);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes viewFadeIn {
+    0% { 
+        opacity: 0; 
+        transform: translateY(10px);
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0px);
+    }
+}
+
+/* Initially show homepage, hide other views */
+#homepage-container {
+    display: block;
+}
+
+#chapter-selection-container,
+#game-container {
+    display: none;
+}
+
+/* Navigation transition states */
+.navigation-transitioning {
+    pointer-events: none;
+    user-select: none;
+}
+
+.navigation-transitioning * {
+    cursor: wait !important;
+}
+
+/* Smooth transitions for all interactive elements during navigation */
+.view-container button,
+.view-container .nav-btn,
+.view-container .choice-btn {
+    transition: all 0.2s ease;
+}
+
+/* Prevent interaction during transitions */
+.view-container.transitioning {
+    pointer-events: none;
+}
+
+/* Loading state for view transitions */
+.view-loading {
+    position: relative;
+}
+
+.view-loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--accent-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1000;
+}
+
+/* Responsive view containers */
+@media (max-width: 768px) {
+    .view-container {
+        padding: var(--spacing-sm);
+    }
+    
+    .view-fade-out,
+    .view-fade-in {
+        animation-duration: 0.2s;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .view-fade-out,
+    .view-fade-in {
+        animation: none;
+        transition: opacity 0.1s ease;
+    }
+    
+    @keyframes viewFadeOut {
+        to { opacity: 0; }
+    }
+    
+    @keyframes viewFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+}

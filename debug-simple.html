@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        #story-display { background: #16213e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #scene-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
+        #scene-timestamp { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+        #speaker-name { font-weight: bold; color: #4a90e2; margin-bottom: 5px; }
+        #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
+        .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .choice-btn:hover { background: #357abd; }
+    </style>
+</head>
+<body>
+    <h1>Simple Debug Test</h1>
+    <div id="console-output"></div>
+    
+    <!-- Story display elements -->
+    <div id="story-display">
+        <div id="scene-title">Loading...</div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content">Initializing story engine...</div>
+    </div>
+    
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    
+    <!-- Hidden elements needed by story engine -->
+    <div style="display: none;">
+        <div id="progress-fill"></div>
+        <div id="current-chapter"></div>
+        <div id="current-branch"></div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    <script src="js/story-engine.js"></script>
+    
+    <script>
+        const consoleOutput = document.getElementById('console-output');
+        
+        // Override console.log to show in page
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const div = document.createElement('div');
+            div.style.color = '#2ed573';
+            div.textContent = args.join(' ');
+            consoleOutput.appendChild(div);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const div = document.createElement('div');
+            div.style.color = '#ff4757';
+            div.textContent = 'ERROR: ' + args.join(' ');
+            consoleOutput.appendChild(div);
+        };
+        
+        // Test everything step by step
+        console.log('=== STARTING DEBUG TEST ===');
+        
+        // Check if all required objects exist
+        console.log('Checking STORY_DATA:', typeof STORY_DATA !== 'undefined' ? 'OK' : 'MISSING');
+        console.log('Checking StoryData:', typeof StoryData !== 'undefined' ? 'OK' : 'MISSING');
+        console.log('Checking StoryEngine:', typeof StoryEngine !== 'undefined' ? 'OK' : 'MISSING');
+        
+        if (typeof STORY_DATA !== 'undefined' && typeof StoryData !== 'undefined' && typeof StoryEngine !== 'undefined') {
+            console.log('All dependencies loaded, testing scene access...');
+            
+            // Test scene access
+            const testScene = StoryData.getScene('scene_001');
+            if (testScene) {
+                console.log('Scene found:', testScene.title);
+                console.log('Scene content length:', testScene.content.length);
+                console.log('Scene choices:', testScene.choices ? testScene.choices.length : 0);
+                
+                // Test story engine creation
+                console.log('Creating StoryEngine...');
+                const engine = new StoryEngine();
+                console.log('StoryEngine created successfully');
+                
+                // Test scene loading
+                console.log('Loading first scene...');
+                engine.loadScene('scene_001').then(() => {
+                    console.log('Scene loaded successfully!');
+                }).catch(error => {
+                    console.error('Error loading scene:', error);
+                });
+                
+            } else {
+                console.error('Could not find scene_001');
+            }
+        } else {
+            console.error('Missing dependencies');
+        }
+    </script>
+</body>
+</html>

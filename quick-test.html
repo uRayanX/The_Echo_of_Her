@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Story Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .console { background: #0f0f23; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 0.9em; max-height: 300px; overflow-y: auto; }
+        #story-display { background: #16213e; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        #scene-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #4a90e2; }
+        #scene-timestamp { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+        #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
+        #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
+        .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Quick Story Test</h1>
+    <div id="console" class="console"></div>
+    
+    <!-- Story display elements -->
+    <div id="story-display">
+        <div id="scene-title">Loading...</div>
+        <div id="scene-timestamp"></div>
+        <div id="speaker-name"></div>
+        <div id="dialogue-content">Testing story loading...</div>
+    </div>
+    
+    <div id="choice-interface">
+        <div id="choices-container"></div>
+    </div>
+    
+    <!-- Hidden elements -->
+    <div style="display: none;">
+        <div id="progress-fill"></div>
+        <div id="current-chapter">Opening</div>
+        <div id="current-branch">Main Story</div>
+    </div>
+
+    <script src="js/story-data.js"></script>
+    <script src="js/story-data-utils.js"></script>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff4757' : type === 'success' ? '#2ed573' : '#5352ed';
+            div.textContent = `[${timestamp}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        try {
+            log('Testing story data access...', 'info');
+            
+            // Test basic story data access
+            if (typeof STORY_DATA === 'undefined') {
+                throw new Error('STORY_DATA not loaded');
+            }
+            log('✓ STORY_DATA loaded', 'success');
+            
+            if (typeof StoryData === 'undefined') {
+                throw new Error('StoryData utility not loaded');
+            }
+            log('✓ StoryData utility loaded', 'success');
+            
+            // Test first scene access
+            const firstScene = StoryData.getScene('scene_001');
+            if (!firstScene) {
+                throw new Error('Cannot find scene_001');
+            }
+            log(`✓ Found first scene: "${firstScene.title}"`, 'success');
+            log(`  Speaker: ${firstScene.speaker}`, 'info');
+            log(`  Content: ${firstScene.content.substring(0, 100)}...`, 'info');
+            log(`  Choices: ${firstScene.choices ? firstScene.choices.length : 0}`, 'info');
+            
+            // Test scene progression
+            if (firstScene.choices && firstScene.choices.length > 0) {
+                const nextSceneId = firstScene.choices[0].nextScene;
+                const nextScene = StoryData.getScene(nextSceneId);
+                if (nextScene) {
+                    log(`✓ Found next scene: ${nextSceneId} - "${nextScene.title}"`, 'success');
+                } else {
+                    log(`✗ Cannot find next scene: ${nextSceneId}`, 'error');
+                }
+            }
+            
+            // Test validation
+            const validation = StoryData.validateStoryData();
+            if (validation.isValid) {
+                log(`✓ Story data validation passed`, 'success');
+                log(`  Total scenes: ${validation.stats.totalScenes}`, 'info');
+                log(`  Total branches: ${validation.stats.totalBranches}`, 'info');
+            } else {
+                log(`✗ Story data validation failed`, 'error');
+                validation.errors.forEach(error => log(`  - ${error}`, 'error'));
+            }
+            
+            // Display the first scene manually
+            const sceneTitle = document.getElementById('scene-title');
+            const sceneTimestamp = document.getElementById('scene-timestamp');
+            const speakerName = document.getElementById('speaker-name');
+            const dialogueContent = document.getElementById('dialogue-content');
+            const choicesContainer = document.getElementById('choices-container');
+            
+            sceneTitle.textContent = firstScene.title;
+            sceneTimestamp.textContent = firstScene.timestamp || '';
+            
+            if (firstScene.speaker && firstScene.speaker !== 'NARRATOR') {
+                speakerName.textContent = firstScene.speaker;
+                speakerName.style.display = 'block';
+            } else {
+                speakerName.style.display = 'none';
+            }
+            
+            dialogueContent.textContent = firstScene.content;
+            
+            // Display choices
+            if (firstScene.choices && firstScene.choices.length > 0) {
+                firstScene.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    button.textContent = choice.text;
+                    button.onclick = () => {
+                        log(`Choice clicked: ${choice.text} -> ${choice.nextScene}`, 'info');
+                        
+                        const nextScene = StoryData.getScene(choice.nextScene);
+                        if (nextScene) {
+                            sceneTitle.textContent = nextScene.title;
+                            sceneTimestamp.textContent = nextScene.timestamp || '';
+                            
+                            if (nextScene.speaker && nextScene.speaker !== 'NARRATOR') {
+                                speakerName.textContent = nextScene.speaker;
+                                speakerName.style.display = 'block';
+                            } else {
+                                speakerName.style.display = 'none';
+                            }
+                            
+                            dialogueContent.textContent = nextScene.content;
+                            
+                            // Update choices
+                            choicesContainer.innerHTML = '';
+                            if (nextScene.choices && nextScene.choices.length > 0) {
+                                nextScene.choices.forEach(nextChoice => {
+                                    const nextButton = document.createElement('button');
+                                    nextButton.className = 'choice-btn';
+                                    nextButton.textContent = nextChoice.text;
+                                    choicesContainer.appendChild(nextButton);
+                                });
+                            }
+                            
+                            log(`Loaded scene: "${nextScene.title}"`, 'success');
+                        } else {
+                            log(`Error: Cannot find scene ${choice.nextScene}`, 'error');
+                        }
+                    };
+                    choicesContainer.appendChild(button);
+                });
+                
+                log(`✓ Displayed ${firstScene.choices.length} choices`, 'success');
+            }
+            
+            log('✓ Manual scene display complete', 'success');
+            
+        } catch (error) {
+            log(`✗ Error: ${error.message}`, 'error');
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>
