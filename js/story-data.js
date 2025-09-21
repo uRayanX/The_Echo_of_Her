@@ -12,7 +12,7 @@ const STORY_DATA = {
                 title: 'The Awakening',
                 timestamp: 'INT. RUMI\'S HOUSE - DINING ROOM - NIGHT (2:57 AM) March 14, 2022',
                 speaker: 'NARRATOR',
-                content: 'RUMI BIN IMRAN (24), disheveled and groggy, stumbles through his modest home. The silence is oppressive. He reaches for a glass of water when his PHONE RINGS, the sound cutting through the quiet like a blade.',
+                content: 'RUMI BIN IMRAN, disheveled and groggy, stumbles through his modest home. The silence is oppressive. He reaches for a glass of water when his PHONE RINGS, the sound cutting through the quiet like a blade.',
                 themeIntensity: 1,
                 effects: ['fade-in'],
                 choices: [
@@ -688,7 +688,7 @@ const STORY_DATA = {
                 title: 'Marzia Appears',
                 timestamp: 'CONTINUOUS',
                 speaker: 'NARRATOR',
-                content: 'A figure steps into the porch light - DR. MARZIA RAHMAN (26), Rumi\'s childhood friend and personal physician. But something\'s off about her appearance. She\'s disheveled, breathing heavily, and there\'s a nervous energy about her that\'s unusual.',
+                content: 'A figure steps into the porch light - DR. MARZIA RAHMAN, Rumi\'s childhood friend and personal physician. But something\'s off about her appearance. She\'s disheveled, breathing heavily, and there\'s a nervous energy about her that\'s unusual.',
                 themeIntensity: 3,
                 effects: ['noir-shadows', 'fade-in'],
                 choices: [
@@ -961,7 +961,7 @@ const STORY_DATA = {
                 title: 'Jannat Appears',
                 timestamp: 'CONTINUOUS',
                 speaker: 'NARRATOR',
-                content: 'He turns slowly. JANNAT (22) sits on the sofa, but she\'s wrong - horrifically wrong. Blood covers the right side of her face, her skull caved in, brain matter visible through shattered bone.',
+                content: 'He turns slowly. JANNAT sits on the sofa, but she\'s wrong - horrifically wrong. Blood covers the right side of her face, her skull caved in, brain matter visible through shattered bone.',
                 themeIntensity: 5,
                 effects: ['supernatural-flicker'],
                 choices: [
