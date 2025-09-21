@@ -1,9 +1,13 @@
 # The Echo of Her - Interactive Branching Narrative
 
+An immersive interactive story experience exploring themes of grief, memory, and the psychological aftermath of tragedy through multiple branching storylines.
+
+---
+
 ## ⚠️ The following project **is a prebuild** for a *UIU* course project, *Web Programming (CSE 4165)*
 - **Team: La Bella Squadra**
 
-An immersive interactive story experience exploring themes of grief, memory, and the psychological aftermath of tragedy through multiple branching storylines.
+---
 
 ## 📖 Story Overview
 
