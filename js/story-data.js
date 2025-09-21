@@ -156,7 +156,7 @@ const STORY_DATA = {
                 title: 'Seeing Jannat',
                 timestamp: 'CONTINUOUS',
                 speaker: 'NARRATOR',
-                content: 'Rumi\'s knees buckle. It\'s JANNAT (22), his wife, her face peaceful but lifeless.',
+                content: 'Rumi\'s knees buckle. It\'s JANNAT, his wife, her face peaceful but lifeless.',
                 themeIntensity: 5,
                 effects: ['fade-in'],
                 choices: [
@@ -2134,7 +2134,7 @@ const STORY_DATA = {
                 title: 'Nightmare Version',
                 timestamp: 'CONTINUOUS',
                 speaker: 'NARRATOR',
-                content: 'JANNAT (22) sits on the sofa, but she\'s a nightmare version of his beloved wife. Her skull is partially caved in, brain matter visible through shattered bone, her neck bent at an unnatural angle.',
+                content: 'JANNAT sits on the sofa, but she\'s a nightmare version of his beloved wife. Her skull is partially caved in, brain matter visible through shattered bone, her neck bent at an unnatural angle.',
                 themeIntensity: 5,
                 effects: ['supernatural-flicker'],
                 choices: [
@@ -4984,7 +4984,7 @@ const STORY_DATA = {
                 title: 'Flashback Begins',
                 timestamp: 'FLASHBACK - BEDROOM - NIGHT (March 13, 2022)',
                 speaker: 'NARRATOR',
-                content: 'Younger Rumi opens the bedroom door. JANNAT (22) and a MAN (30s) are in bed together. They freeze, caught.',
+                content: 'Younger Rumi opens the bedroom door. JANNAT and a MAN are in bed together. They freeze, caught.',
                 themeIntensity: 5,
                 effects: ['psychological-distortion'],
                 choices: [
