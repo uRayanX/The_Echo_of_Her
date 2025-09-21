@@ -1,5 +1,8 @@
 # The Echo of Her - Interactive Branching Narrative
 
+## ⚠️ The following project **is a prebuild** for a *UIU* course project, *Web Programming (CSE 4165)*
+- **Team: La Bella Squadra**
+
 An immersive interactive story experience exploring themes of grief, memory, and the psychological aftermath of tragedy through multiple branching storylines.
 
 ## 📖 Story Overview
@@ -112,5 +115,4 @@ Each path offers distinct revelations about the true circumstances of Jannat's d
 - **Love and Obsession**: When devotion becomes destructive
 - **Supernatural Justice**: Whether the dead can find peace through truth
 
-## ⚠️ The following project is an UIU course project for the course: Web Programming (CSE 4165)
-- **Team: La Bella Squadra**
+
