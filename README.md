@@ -112,9 +112,5 @@ Each path offers distinct revelations about the true circumstances of Jannat's d
 - **Love and Obsession**: When devotion becomes destructive
 - **Supernatural Justice**: Whether the dead can find peace through truth
 
-## The following project is an UIU course project for the course: Web Programming (CSE 4165)
+## ⚠️ The following project is an UIU course project for the course: Web Programming (CSE 4165)
 - **Team: La Bella Squadra**
-
-*"The truth has a way of surfacing, no matter how deep we try to bury it."*
-
-**Warning**: This story contains mature themes including violence, death, and psychological trauma. Reader discretion advised.
