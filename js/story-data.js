@@ -440,7 +440,7 @@ const STORY_DATA = {
                 title: 'Relief',
                 timestamp: 'CONTINUOUS',
                 speaker: 'RUMI',
-                content: '(startled, then relieved) Jesus... just a cat.',
+                content: '(startled, then relieved) Flipping hell... just a cat.',
                 themeIntensity: 2,
                 effects: ['typewriter'],
                 choices: [
