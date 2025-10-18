@@ -145,7 +145,7 @@ As he opens the window, a CAT suddenly jumps out from behind the curtains and ru
 
 **RUMI**  
 (startled, then relieved)  
-- **Option A:** Jesus... just a cat.
+- **Option A:** Crikey... just a cat.
 - **Option B:** Damn it... scared the hell out of me.
 
 He looks at the mess - the plastic kettle on the floor, tea everywhere. Surprisingly, the kettle isn't cracked despite the fall.
