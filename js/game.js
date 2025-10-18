@@ -98,7 +98,7 @@ class EchoOfHerGame {
             // Load the scene
             await originalLoadScene(sceneId);
 
-            // Trigger scene change event
+            //here trigger the event
             this.onSceneChange(sceneId);
         };
     }
