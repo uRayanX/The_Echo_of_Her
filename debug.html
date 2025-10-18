@@ -40,6 +40,28 @@
             cursor: pointer;
             margin: 5px;
         }
+        .auto-progress {
+            position: relative;
+            height: 4px;
+            margin-top: 12px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .auto-progress.visible {
+            opacity: 1;
+        }
+        .auto-progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: #2ed573;
+            transition: width linear;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +83,9 @@
         </div>
         <div id="choice-interface">
             <div id="choices-container"></div>
+                <div class="auto-progress" id="auto-progress" aria-hidden="true">
+                    <div class="auto-progress-fill" id="auto-progress-fill"></div>
+                </div>
         </div>
         <div id="progress-fill"></div>
         <div id="current-chapter"></div>
@@ -68,6 +93,7 @@
     </div>
 
     <script src="js/story-data.js"></script>
+    <script src="js/dialogue-options.js"></script>
     <script src="js/story-data-utils.js"></script>
     <script src="js/theme-controller.js"></script>
     <script src="js/story-engine.js"></script>

@@ -13,6 +13,9 @@
         #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
         #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
         .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .auto-progress { position: relative; height: 4px; margin-top: 12px; border-radius: 2px; background: rgba(255, 255, 255, 0.15); overflow: hidden; opacity: 0; transition: opacity 0.2s ease; }
+        .auto-progress.visible { opacity: 1; }
+        .auto-progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #2ed573; transition: width linear; }
     </style>
 </head>
 <body>
@@ -29,6 +32,9 @@
     
     <div id="choice-interface">
         <div id="choices-container"></div>
+        <div class="auto-progress" id="auto-progress" aria-hidden="true">
+            <div class="auto-progress-fill" id="auto-progress-fill"></div>
+        </div>
     </div>
     
     <!-- Hidden elements needed by story engine -->
@@ -85,52 +91,57 @@
         if (allElementsFound) {
             log('All required DOM elements found, loading story engine...', 'success');
             
-            // Load story engine after DOM check
-            const script = document.createElement('script');
-            script.src = 'js/story-engine.js';
-            script.onload = function() {
-                log('Story engine script loaded', 'success');
-                
-                try {
-                    // Test story engine creation
-                    log('Creating StoryEngine...', 'info');
-                    const engine = new StoryEngine();
-                    log('✓ StoryEngine created successfully', 'success');
-                    
-                    // Test initialization
-                    log('Initializing story engine...', 'info');
-                    engine.init();
-                    log('✓ Story engine initialized', 'success');
-                    
-                    // Check scene loading after a delay
-                    setTimeout(() => {
-                        const currentScene = engine.getCurrentScene();
-                        if (currentScene) {
-                            log(`✓ Scene loaded: ${currentScene.id} - "${currentScene.title}"`, 'success');
-                            
-                            // Check if content was displayed
-                            const titleElement = document.getElementById('scene-title');
-                            const contentElement = document.getElementById('dialogue-content');
-                            
-                            log(`Title element content: "${titleElement.textContent}"`, 'info');
-                            log(`Content element content: "${contentElement.textContent.substring(0, 100)}..."`, 'info');
-                            
-                        } else {
-                            log('✗ No scene loaded', 'error');
-                        }
-                    }, 2000);
-                    
-                } catch (error) {
-                    log(`✗ Error creating/initializing story engine: ${error.message}`, 'error');
-                    console.error('Full error:', error);
-                }
-            };
-            
-            script.onerror = function() {
-                log('✗ Failed to load story engine script', 'error');
-            };
-            
-            document.head.appendChild(script);
+            const loadScript = (src, label) => new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    log(`Loaded script: ${label}`, 'success');
+                    resolve();
+                };
+                script.onerror = () => {
+                    log(`✗ Failed to load script: ${label}`, 'error');
+                    reject(new Error(`Failed to load ${src}`));
+                };
+                document.head.appendChild(script);
+            });
+
+            // Load scripts sequentially before initializing story engine
+            loadScript('js/dialogue-options.js', 'dialogue options')
+                .then(() => loadScript('js/story-engine.js', 'story engine'))
+                .then(() => {
+                    try {
+                        log('Creating StoryEngine...', 'info');
+                        const engine = new StoryEngine();
+                        log('✓ StoryEngine created successfully', 'success');
+                        
+                        log('Initializing story engine...', 'info');
+                        engine.init();
+                        log('✓ Story engine initialized', 'success');
+                        
+                        setTimeout(() => {
+                            const currentScene = engine.getCurrentScene();
+                            if (currentScene) {
+                                log(`✓ Scene loaded: ${currentScene.id} - "${currentScene.title}"`, 'success');
+                                
+                                const titleElement = document.getElementById('scene-title');
+                                const contentElement = document.getElementById('dialogue-content');
+                                
+                                log(`Title element content: "${titleElement.textContent}"`, 'info');
+                                log(`Content element content: "${contentElement.textContent.substring(0, 100)}..."`, 'info');
+                                
+                            } else {
+                                log('✗ No scene loaded', 'error');
+                            }
+                        }, 2000);
+                        
+                    } catch (error) {
+                        log(`✗ Error creating/initializing story engine: ${error.message}`, 'error');
+                        console.error('Full error:', error);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
             
         } else {
             log('Cannot proceed - missing required DOM elements', 'error');

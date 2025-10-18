@@ -13,6 +13,9 @@
         #speaker-name { font-weight: bold; color: #2ed573; margin-bottom: 5px; }
         #dialogue-content { line-height: 1.6; margin-bottom: 20px; }
         .choice-btn { background: #4a90e2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .auto-progress { position: relative; height: 4px; margin-top: 12px; border-radius: 2px; background: rgba(255, 255, 255, 0.15); overflow: hidden; opacity: 0; transition: opacity 0.2s ease; }
+        .auto-progress.visible { opacity: 1; }
+        .auto-progress-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #2ed573; transition: width linear; }
     </style>
 </head>
 <body>
@@ -29,6 +32,9 @@
     
     <div id="choice-interface">
         <div id="choices-container"></div>
+            <div class="auto-progress" id="auto-progress" aria-hidden="true">
+                <div class="auto-progress-fill" id="auto-progress-fill"></div>
+            </div>
     </div>
     
     <!-- Hidden elements -->
@@ -39,6 +45,7 @@
     </div>
 
     <script src="js/story-data.js"></script>
+    <script src="js/dialogue-options.js"></script>
     <script src="js/story-data-utils.js"></script>
     
     <script>

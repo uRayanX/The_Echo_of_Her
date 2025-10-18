@@ -2,17 +2,21 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load the story data file
+// Prepare isolated context for evaluating story data
+const vm = require('vm');
 const storyDataPath = path.join(__dirname, 'js', 'story-data.js');
 const storyDataContent = fs.readFileSync(storyDataPath, 'utf8');
 
-// Execute the story data file to get STORY_DATA
-eval(storyDataContent);
+const sandbox = { console };
+vm.createContext(sandbox);
+vm.runInContext(`${storyDataContent}; this.__STORY_DATA__ = STORY_DATA;`, sandbox, {
+    filename: 'story-data.js'
+});
 
-// Load the utils file
-const utilsPath = path.join(__dirname, 'js', 'story-data-utils.js');
-const utilsContent = fs.readFileSync(utilsPath, 'utf8');
-eval(utilsContent);
+global.STORY_DATA = sandbox.__STORY_DATA__;
+
+// Load the utils module after STORY_DATA is globally available
+const StoryData = require('./js/story-data-utils.js');
 
 // Test basic functionality
 console.log('=== TESTING STORY DATA ===');

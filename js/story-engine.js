@@ -6,6 +6,9 @@ class StoryEngine {
         this.visitedScenes = new Set();
         this.choiceHistory = [];
         this.isAnimating = false;
+    this.autoAdvanceTimeout = null;
+    this.dialogueOptions = (typeof DIALOGUE_OPTIONS !== 'undefined' && DIALOGUE_OPTIONS) ? DIALOGUE_OPTIONS : {};
+    this.currentDialogueMeta = null;
         
         // DOM elements
         this.storyDisplay = document.getElementById('story-display');
@@ -15,6 +18,8 @@ class StoryEngine {
         this.dialogueContent = document.getElementById('dialogue-content');
         this.choicesContainer = document.getElementById('choices-container');
         this.choiceInterface = document.getElementById('choice-interface');
+        this.autoProgressBar = document.getElementById('auto-progress');
+        this.autoProgressFill = document.getElementById('auto-progress-fill');
         
         // Bind methods
         this.handleChoice = this.handleChoice.bind(this);
@@ -59,6 +64,8 @@ class StoryEngine {
     // Display scene content with animations
     async displayScene(scene) {
         this.isAnimating = true;
+        this.cancelAutoAdvance();
+        this.currentDialogueMeta = null;
         
         // Check if theme is transitioning - if so, wait for it to complete
         if (window.game && window.game.themeController && window.game.themeController.isTransitioning) {
@@ -71,6 +78,9 @@ class StoryEngine {
         
         // Clear previous content
         this.clearContent();
+        const dialogueMeta = this.getDialogueOptionsForScene(scene);
+        this.currentDialogueMeta = dialogueMeta;
+        this.hideAutoProgressBar();
         
         // Set scene header
         if (this.sceneTitle) {
@@ -96,7 +106,9 @@ class StoryEngine {
         }
         
         // Display dialogue content with typewriter effect if specified
-        if (scene.effects && scene.effects.includes('typewriter')) {
+        if (dialogueMeta) {
+            this.renderDialoguePreface(dialogueMeta);
+        } else if (scene.effects && scene.effects.includes('typewriter')) {
             await this.typewriterEffect(scene.content);
         } else {
             this.dialogueContent.innerHTML = this.formatContent(scene.content);
@@ -104,10 +116,20 @@ class StoryEngine {
         }
         
         // Display choices after content is shown
+        const postDisplayDelay = scene.effects && scene.effects.includes('typewriter') ? 1000 : 500;
         setTimeout(() => {
-            this.displayChoices(scene.choices);
+            if (this.shouldAutoAdvance(scene)) {
+                if (this.choiceInterface) {
+                    this.choiceInterface.style.display = 'none';
+                }
+                this.scheduleAutoAdvance(scene);
+            } else if (dialogueMeta) {
+                this.displayDialogueOptions(scene, dialogueMeta);
+            } else {
+                this.displayChoices(scene.choices);
+            }
             this.isAnimating = false;
-        }, scene.effects && scene.effects.includes('typewriter') ? 1000 : 500);
+        }, postDisplayDelay);
     }
 
     // Hide content during theme transitions
@@ -189,8 +211,190 @@ class StoryEngine {
             .join('');
     }
 
+    // Retrieve dialogue options for current scene when available
+    getDialogueOptionsForScene(scene) {
+        if (!scene || !scene.id) {
+            return null;
+        }
+        const entry = this.dialogueOptions[scene.id];
+        if (!entry || !Array.isArray(entry.options) || entry.options.length < 2) {
+            return null;
+        }
+        return entry;
+    }
+
+    // Determine if a scene should auto advance without user interaction
+    shouldAutoAdvance(scene) {
+        if (!scene) {
+            return false;
+        }
+
+        const hasBranchingChoices = Array.isArray(scene.choices)
+            ? scene.choices.some(choice => choice.id !== 'continue')
+            : false;
+        if (hasBranchingChoices) {
+            return false;
+        }
+
+        const hasDialogueOptions = !!this.getDialogueOptionsForScene(scene);
+        if (hasDialogueOptions) {
+            return false;
+        }
+
+        if (scene.autoAdvance === false) {
+            return false;
+        }
+
+        if (scene.autoAdvance === true) {
+            return true;
+        }
+
+        return true;
+    }
+
+    // Schedule automatic advance for non-dialogue, choice-free scenes
+    scheduleAutoAdvance(scene) {
+        this.cancelAutoAdvance();
+        const delay = typeof scene.autoAdvanceDelay === 'number' ? scene.autoAdvanceDelay : 4000;
+        const choices = Array.isArray(scene.choices) ? scene.choices : [];
+        const continueChoice = choices.find(choice => choice.id === 'continue') || choices[0];
+        if (!continueChoice || !continueChoice.nextScene) {
+            console.warn(`Auto-advance skipped: no next scene for ${scene.id}`);
+            return;
+        }
+
+        const fadeDuration = 400;
+        this.showAutoProgressBar(delay);
+        this.autoAdvanceTimeout = setTimeout(() => {
+            this.applyAutoAdvanceFade();
+            setTimeout(() => {
+                this.isAnimating = false;
+                this.loadScene(continueChoice.nextScene);
+            }, fadeDuration);
+        }, delay);
+    }
+
+    // Cancel any pending auto-advance timers
+    cancelAutoAdvance() {
+        if (this.autoAdvanceTimeout) {
+            clearTimeout(this.autoAdvanceTimeout);
+            this.autoAdvanceTimeout = null;
+        }
+        this.hideAutoProgressBar();
+    }
+
+    // Render preface text for dialogue options before choices appear
+    renderDialoguePreface(dialogueMeta) {
+        if (!dialogueMeta) {
+            return;
+        }
+
+        this.hideAutoProgressBar();
+
+        const fragments = [];
+
+        if (dialogueMeta.preface) {
+            fragments.push(`<p><em>${dialogueMeta.preface}</em></p>`);
+        }
+
+        fragments.push('<p class="dialogue-prompt">Choose how to respond.</p>');
+        this.dialogueContent.innerHTML = fragments.join('');
+        this.dialogueContent.classList.add('fade-in');
+    }
+
+    // Apply subtle fade before auto advancing to the next scene
+    applyAutoAdvanceFade() {
+        const elements = [
+            this.dialogueContent,
+            this.speakerName,
+            this.sceneTitle,
+            this.sceneTimestamp
+        ];
+        elements.forEach(el => {
+            if (el) {
+                el.classList.add('content-fade-out');
+            }
+        });
+    }
+
+    // Display auto-advance progress indicator
+    showAutoProgressBar(duration) {
+        if (!this.autoProgressBar || !this.autoProgressFill) {
+            return;
+        }
+
+        this.autoProgressFill.style.transition = 'none';
+        this.autoProgressFill.style.width = '0%';
+        void this.autoProgressFill.offsetWidth;
+
+        if (this.choiceInterface) {
+            this.choiceInterface.style.display = 'block';
+        }
+
+        this.autoProgressBar.classList.add('visible');
+        this.autoProgressFill.style.transition = `width ${duration}ms linear`;
+        requestAnimationFrame(() => {
+            this.autoProgressFill.style.width = '100%';
+        });
+    }
+
+    // Hide auto-advance progress indicator
+    hideAutoProgressBar() {
+        if (!this.autoProgressBar || !this.autoProgressFill) {
+            return;
+        }
+
+        this.autoProgressBar.classList.remove('visible');
+        this.autoProgressFill.style.transition = 'none';
+        this.autoProgressFill.style.width = '0%';
+
+        if (this.choiceInterface && this.choicesContainer && this.choicesContainer.childElementCount === 0) {
+            this.choiceInterface.style.display = 'none';
+        }
+    }
+
+    // Present dialogue choices for a scene
+    displayDialogueOptions(scene, dialogueMeta) {
+        if (!scene || !dialogueMeta) {
+            this.displayChoices(scene?.choices || []);
+            return;
+        }
+
+        const continueTarget = StoryData.getNextSceneId(scene.id, 'continue');
+        if (!continueTarget) {
+            console.warn(`No continue target for dialogue scene ${scene.id}`);
+            return;
+        }
+
+        const choiceData = dialogueMeta.options.map((text, index) => ({
+            id: `dialogue_option_${index + 1}`,
+            text,
+            nextScene: continueTarget,
+            choiceType: 'dialogue',
+            preface: dialogueMeta.preface || '',
+            choiceText: text
+        }));
+
+        this.displayChoices(choiceData, { choiceType: 'dialogue', preface: dialogueMeta.preface || '' });
+    }
+
+    // Render the selected dialogue choice onto the scene before advancing
+    renderDialogueSelection(preface, choiceText) {
+        this.hideAutoProgressBar();
+        const fragments = [];
+        if (preface) {
+            fragments.push(`<p><em>${preface}</em></p>`);
+        }
+        if (choiceText) {
+            fragments.push(`<p>${choiceText}</p>`);
+        }
+        this.dialogueContent.innerHTML = fragments.join('');
+        this.dialogueContent.classList.add('fade-in');
+    }
+
     // Display choices for the current scene
-    displayChoices(choices) {
+    displayChoices(choices = [], options = {}) {
+        this.hideAutoProgressBar();
         this.choicesContainer.innerHTML = '';
         
         if (!choices || choices.length === 0) {
@@ -206,10 +410,19 @@ class StoryEngine {
             button.textContent = choice.text;
             button.dataset.choiceId = choice.id;
             button.dataset.nextScene = choice.nextScene;
+            const choiceType = choice.choiceType || options.choiceType || 'standard';
+            button.dataset.choiceType = choiceType;
+            button.dataset.choiceText = choice.choiceText || choice.text;
+            if (choice.preface || options.preface) {
+                button.dataset.preface = choice.preface || options.preface || '';
+            }
             
             // Add special styling for continue buttons
             if (choice.id === 'continue') {
                 button.classList.add('continue-btn');
+            }
+            if (choiceType === 'dialogue') {
+                button.classList.add('dialogue-choice-btn');
             }
             
             // Add click handler
@@ -245,12 +458,14 @@ class StoryEngine {
         const button = event.target;
         const choiceId = button.dataset.choiceId;
         const nextSceneId = button.dataset.nextScene;
+        const choiceType = button.dataset.choiceType || 'standard';
         
         // Record choice in history
         this.choiceHistory.push({
             sceneId: this.currentScene.id,
             choiceId: choiceId,
-            choiceText: button.textContent,
+            choiceText: button.dataset.choiceText || button.textContent,
+            choiceType: choiceType,
             timestamp: Date.now()
         });
         
@@ -260,6 +475,17 @@ class StoryEngine {
         // Disable all choices temporarily
         const allChoices = this.choicesContainer.querySelectorAll('.choice-btn');
         allChoices.forEach(btn => btn.disabled = true);
+
+        if (choiceType === 'dialogue') {
+            this.isAnimating = true;
+            this.choiceInterface.style.display = 'none';
+            this.renderDialogueSelection(button.dataset.preface || '', button.dataset.choiceText || button.textContent);
+            setTimeout(() => {
+                this.isAnimating = false;
+                this.loadScene(nextSceneId);
+            }, 700);
+            return;
+        }
         
         // Navigate to next scene after brief delay
         setTimeout(() => {
