@@ -115,7 +115,7 @@ class HomePage {
 
                         <footer class="homepage-footer">
                             <div class="game-info">
-                                <span class="version">Version 1.0</span>
+                                <span class="version">Version 1.5 Snapshot</span>
                                 <span class="separator">•</span>
                                 <span class="author">Interactive Fiction</span>
                             </div>
