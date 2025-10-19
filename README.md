@@ -120,3 +120,7 @@ Each path offers distinct revelations about the true circumstances of Jannat's d
 - **Supernatural Justice**: Whether the dead can find peace through truth
 
 
+## ChangeLog
+- **Version 1.5 - Snapshot** : Pushing updates for Final Presentation
+- **VFersion 1.o - Alpha** : 50% Update compilation (70% Complete Project)
+
